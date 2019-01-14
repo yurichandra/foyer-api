@@ -26,6 +26,11 @@ class GatewayController extends Controller
     protected $route_slug;
 
     /**
+     * Route parameters.
+     */
+    protected $route_params;
+
+    /**
      * GatewayController construct.
      *
      * @param Request $request
@@ -38,6 +43,10 @@ class GatewayController extends Controller
         $this->route_slug = $this->getRequestRouteSlug($request);
         $this->route_data = $routing_service->getRouteData($this->route_slug);
         $http_service->setHeaders($request);
+
+        if ($this->includeParams()) {
+            $this->route_params = $this->route[2];
+        }
     }
 
     /**
@@ -50,20 +59,56 @@ class GatewayController extends Controller
         return $request->path() . "." . strtolower($request->method());
     }
 
-    public function includeParams()
+    /**
+     * Method to check whether route include params or not.
+     *
+     * @return boolean
+     */
+    protected function includeParams()
     {
-        is_null($this->route[2]) ? false : true;
+        return is_null($this->route[2]) ? false : true;
     }
 
-    public function url()
+    /**
+     * Method to return an url to perform request.
+     *
+     * @return string $url
+     */
+    protected function url()
     {
         if ($this->includeParams()) {
-            return $this->rearrangeUrl($this->route_data['url']);
+            return $this->replaceParams($this->route_data['url']);
         }
 
         return $this->route_data['url'];
     }
 
+    /**
+     * Method to replace params if included.
+     *
+     * @return string $url
+     */
+    protected function replaceParams($url)
+    {
+        collect($this->route_params)
+            ->each(function ($value, $key) use (&$url) {
+                $wildcard = '{' . $key . '}';
+
+                if (strpos($url, $wildcard) !== false) {
+                    $url = str_replace($wildcard, $value, $url);
+                }
+            });
+
+        return $url;
+    }
+
+    /**
+     * Method to perform GET request.
+     *
+     * @param Request $request
+     * @param HttpService $service
+     * @return Response $response
+     */
     public function get(Request $request, HttpService $service)
     {
         try {
@@ -75,6 +120,13 @@ class GatewayController extends Controller
         }
     }
 
+    /**
+     * Method to perform POST request.
+     *
+     * @param Request $request
+     * @param HttpService $service
+     * @return Response $response
+     */
     public function post(Request $request, HttpService $service)
     {
         try {
@@ -86,6 +138,13 @@ class GatewayController extends Controller
         }
     }
 
+    /**
+     * Method to perform PATCH request.
+     *
+     * @param Request $request
+     * @param HttpService $service
+     * @return Response $response
+     */
     public function patch(Request $request, HttpService $service)
     {
         try {
@@ -97,6 +156,13 @@ class GatewayController extends Controller
         }
     }
 
+    /**
+     * Method to perform DELETE request.
+     *
+     * @param Request $request
+     * @param HttpService $service
+     * @return Response $response
+     */
     public function delete(Request $request, HttpService $service)
     {
         try {
