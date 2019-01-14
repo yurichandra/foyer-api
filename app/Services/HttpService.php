@@ -17,7 +17,7 @@ class HttpService
         $this->client = $client;
     }
     
-    private function sendResponse($response)
+    protected function sendResponse($response)
     {
         return [
             'status' => $response->getStatusCode(),
@@ -120,4 +120,6 @@ class HttpService
             throw $e;
         }
     }
+
+    //TODO: Check whether service already active or not.
 }
