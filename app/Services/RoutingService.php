@@ -4,9 +4,15 @@ namespace App\Services;
 
 use Laravel\Lumen\Application;
 use App\Models\Route;
+use App\Models\Service;
 use App\Repositories\ServiceRepository;
 use Illuminate\Support\Collection;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\DB;
+use App\Exceptions\RouteNotRegisteredException;
+use App\Exceptions\ServiceDuplicationException;
+use App\Exceptions\ServiceCreationException;
+use App\Exceptions\ServiceUpdateException;
 
 class RoutingService
 {
@@ -71,14 +77,45 @@ class RoutingService
      */
     public function addService(array $data)
     {
-        try {
-            DB::transaction(function () use ($data, &$service) {
-                $service = Service::create($data);
+        if (!$this->isServiceSlugUnique($data['slug'])) {
+            throw new ServiceDuplicationException();
+        }
 
-                return $service;
+        try {
+            DB::transaction(function () use ($data) {
+                $service = Service::create($data);
             });
 
+            return true;
+        } catch (\Exception $e) {
+            throw new ServiceCreationException();
+        }
+    }
+
+    /**
+     * Method to fetch all available services.
+     *
+     * @return Collection
+     */
+    public function getServices()
+    {
+        return $this->service_repo->get();
+    }
+
+    /**
+     * Find registered service by a slug.
+     *
+     * @param string $slug
+     * @return Service $service
+     */
+    public function findServiceBySlug($slug)
+    {
+        try {
+            $service = Service::find('slug', $slug)->firstOrFail();
+
             return $service;
+        } catch (ModelNotFoundException $e) {
+            throw $e;
         } catch (\Exception $e) {
             throw $e;
         }
@@ -105,7 +142,7 @@ class RoutingService
         } catch (ModelNotFoundException $e) {
             throw $e;
         } catch (\Exception $e) {
-            throw $e;
+            throw new ServiceUpdateException();
         }
     }
 
@@ -119,6 +156,12 @@ class RoutingService
         return $this->findService($id)->routes;
     }
 
+    /**
+     * Get route data based on slug.
+     *
+     * @param string $key
+     * @return array
+     */
     public function getRouteData($key)
     {
         try {
@@ -135,14 +178,33 @@ class RoutingService
         }
     }
 
-    public function findRouteBySlug($key)
+    /**
+     * Find route by a slug.
+     *
+     * @param string $slug
+     * @return Route $route
+     */
+    public function findRouteBySlug($slug)
     {
         try {
-            $route = Route::where('slug', $key)->first();
+            $route = Route::where('slug', $slug)->first();
 
             return $route;
         } catch (\Exception $e) {
             throw $e;
         }
+    }
+
+    /**
+     * Method to check whether service slug unique or not.
+     *
+     * @param string $slug
+     * @return bool
+     */
+    protected function isServiceSlugUnique($slug)
+    {
+        $service = Service::where('slug', $slug)->first();
+
+        return is_null($service) ? true : false;
     }
 }
