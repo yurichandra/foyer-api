@@ -3,7 +3,7 @@
 namespace App\Console\Commands\Services;
 
 use Illuminate\Console\Command;
-use App\Services\RoutingService;
+use App\Services\ServiceRegistry;
 
 class AddService extends Command
 {
@@ -22,7 +22,7 @@ class AddService extends Command
     protected $description = 'Add a service';
 
     /**
-     * RoutingService attributes.
+     * ServiceRegistry attributes.
      *
      * @var string
      */
@@ -31,9 +31,9 @@ class AddService extends Command
     /**
      * Create new command instance.
      *
-     * @param RoutingService $service
+     * @param ServiceRegistry $service
      */
-    public function __construct(RoutingService $service)
+    public function __construct(ServiceRegistry $service)
     {
         parent::__construct();
 
@@ -56,7 +56,7 @@ class AddService extends Command
                 'slug' => $slug
             ]);
 
-            $this->info($name . 'successfully added as a service');
+            $this->info($name . ' successfully added as a service');
         } catch (\Exception $e) {
             $this->info($e->getMessage());
         }

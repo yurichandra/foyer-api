@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Services\HttpService;
-use App\Services\RoutingService;
+use App\Routing\RouteRegistry;
 
 class GatewayController extends Controller
 {
@@ -35,13 +35,13 @@ class GatewayController extends Controller
      *
      * @param Request $request
      * @param HttpService $http_service
-     * @param RoutingService $routing_service
+     * @param RouteRegistry $route_registry
      */
-    public function __construct(Request $request, HttpService $http_service, RoutingService $routing_service)
+    public function __construct(Request $request, HttpService $http_service, RouteRegistry $route_registry)
     {
         $this->route = $request->route();
         $this->route_slug = $this->getRequestRouteSlug($request);
-        $this->route_data = $routing_service->getRouteData($this->route_slug);
+        $this->route_data = $route_registry->getRouteData($this->route_slug);
         $http_service->setHeaders($request);
 
         if ($this->includeParams()) {

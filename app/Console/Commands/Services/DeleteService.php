@@ -3,7 +3,7 @@
 namespace App\Console\Commands\Services;
 
 use Illuminate\Console\Command;
-use App\Services\RoutingService;
+use App\Services\ServiceRegistry;
 
 class DeleteService extends Command
 {
@@ -22,7 +22,7 @@ class DeleteService extends Command
     protected $description = 'Delete a service available';
 
     /**
-     * RoutingService attributes.
+     * ServiceRegistry attributes.
      *
      * @var string
      */
@@ -31,9 +31,9 @@ class DeleteService extends Command
     /**
      * Create new command instance.
      *
-     * @param RoutingService $service
+     * @param ServiceRegistry $service
      */
-    public function __construct(RoutingService $service)
+    public function __construct(ServiceRegistry $service)
     {
         parent::__construct();
 

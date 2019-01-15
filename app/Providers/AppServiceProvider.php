@@ -4,8 +4,9 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use App\Services\HttpService;
-use App\Services\RoutingService;
 use GuzzleHttp\Client;
+use App\Routing\RouteRegistry;
+use App\Services\ServiceRegistry;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,11 +21,15 @@ class AppServiceProvider extends ServiceProvider
             return new HttpService($client);
         });
 
-        $this->app->singleton(RoutingService::class, function () {
-            return new RoutingService();
+        $this->app->singleton(RouteRegistry::class, function () {
+            return new RouteRegistry();
         });
 
-        app(RoutingService::class)->registerRoutes(app());
+        $this->app->singleton(ServiceRegistry::class, function () {
+            return new ServiceRegistry();
+        });
+
+        app(RouteRegistry::class)->registerRoutes(app());
     }
 
     /**
