@@ -5,21 +5,21 @@ namespace App\Console\Commands\Services;
 use Illuminate\Console\Command;
 use App\Services\RoutingService;
 
-class AddService extends Command
+class DeleteService extends Command
 {
     /**
      * Signature of console command.
      *
      * @var string
      */
-    protected $signature = 'foyer:add-service';
+    protected $signature = 'foyer:delete-service';
 
     /**
      * Description of console command.
      *
      * @var string
      */
-    protected $description = 'Add a service';
+    protected $description = 'Delete a service available';
 
     /**
      * RoutingService attributes.
@@ -45,18 +45,11 @@ class AddService extends Command
      */
     public function handle()
     {
-        $name = $this->ask('Name of service?');
-        $url = $this->ask('URL of service?');
-        $slug = $this->ask('Slug of service?');
-
         try {
-            $this->service->addService([
-                'name' => $name,
-                'url' => $url,
-                'slug' => $slug
-            ]);
+            $slug = $this->ask('Slug of service?');
 
-            $this->info($name . 'successfully added as a service');
+            $this->service->deleteService($slug);
+            $this->info($slug . ' has been deleted');
         } catch (\Exception $e) {
             $this->info($e->getMessage());
         }

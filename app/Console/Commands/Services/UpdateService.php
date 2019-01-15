@@ -5,21 +5,21 @@ namespace App\Console\Commands\Services;
 use Illuminate\Console\Command;
 use App\Services\RoutingService;
 
-class AddService extends Command
+class UpdateService extends Command
 {
     /**
      * Signature of console command.
      *
      * @var string
      */
-    protected $signature = 'foyer:add-service';
+    protected $signature = 'foyer:update-service';
 
     /**
      * Description of console command.
      *
      * @var string
      */
-    protected $description = 'Add a service';
+    protected $description = 'Update a services available';
 
     /**
      * RoutingService attributes.
@@ -45,18 +45,12 @@ class AddService extends Command
      */
     public function handle()
     {
-        $name = $this->ask('Name of service?');
-        $url = $this->ask('URL of service?');
-        $slug = $this->ask('Slug of service?');
-
         try {
-            $this->service->addService([
-                'name' => $name,
-                'url' => $url,
-                'slug' => $slug
-            ]);
-
-            $this->info($name . 'successfully added as a service');
+            $slug = $this->ask('Slug of service?');
+            $url = $this->ask('URL of service?');
+            
+            $this->service->updateService($slug, ['url' => $url]);
+            $this->info($slug . ' has been updated');
         } catch (\Exception $e) {
             $this->info($e->getMessage());
         }
