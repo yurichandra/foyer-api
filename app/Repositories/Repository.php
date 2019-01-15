@@ -8,7 +8,7 @@ class Repository
 
     public function get()
     {
-        return $this->model->get();
+        return $this->model::get();
     }
 
     public function find($id)

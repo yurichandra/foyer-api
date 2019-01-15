@@ -111,9 +111,28 @@ class RoutingService
     public function findServiceBySlug($slug)
     {
         try {
-            $service = Service::find('slug', $slug)->firstOrFail();
+            $service = Service::where('slug', $slug)->firstOrFail();
 
             return $service;
+        } catch (ModelNotFoundException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Delete registered service by a slug.
+     *
+     * @param string $slug
+     * @return Service $service
+     */
+    public function deleteService($slug)
+    {
+        try {
+            $service = Service::where('slug', $slug)->firstOrFail();
+
+            return $this->service_repo->delete($service);
         } catch (ModelNotFoundException $e) {
             throw $e;
         } catch (\Exception $e) {
@@ -129,10 +148,10 @@ class RoutingService
      *
      * @return bool
      */
-    public function updateService($id, array $data)
+    public function updateService($slug, array $data)
     {
         try {
-            $service = $this->findService($id);
+            $service = $this->findServiceBySlug($slug);
 
             DB::transaction(function () use ($service, $data) {
                 $service->update($data);
