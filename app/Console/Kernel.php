@@ -5,6 +5,9 @@ namespace App\Console;
 use Illuminate\Console\Scheduling\Schedule;
 use Laravel\Lumen\Console\Kernel as ConsoleKernel;
 use App\Console\Commands\Services\AddService;
+use App\Console\Commands\Services\ShowService;
+use App\Console\Commands\Services\UpdateService;
+use App\Console\Commands\Services\DeleteService;
 
 class Kernel extends ConsoleKernel
 {
@@ -14,7 +17,10 @@ class Kernel extends ConsoleKernel
      * @var array
      */
     protected $commands = [
-        AddService::class
+        AddService::class,
+        ShowService::class,
+        UpdateService::class,
+        DeleteService::class,
     ];
 
     /**
