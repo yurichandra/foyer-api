@@ -8,6 +8,9 @@ use App\Console\Commands\Services\AddService;
 use App\Console\Commands\Services\ShowService;
 use App\Console\Commands\Services\UpdateService;
 use App\Console\Commands\Services\DeleteService;
+use App\Console\Commands\Routes\AddRoute;
+use App\Console\Commands\Routes\ShowRoute;
+use App\Console\Commands\Routes\UpdateRoute;
 
 class Kernel extends ConsoleKernel
 {
@@ -21,6 +24,9 @@ class Kernel extends ConsoleKernel
         ShowService::class,
         UpdateService::class,
         DeleteService::class,
+        AddRoute::class,
+        ShowRoute::class,
+        UpdateRoute::class,
     ];
 
     /**
