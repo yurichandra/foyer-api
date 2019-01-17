@@ -5,9 +5,24 @@ namespace App\Routing;
 use Laravel\Lumen\Application;
 use App\Models\Route;
 use Illuminate\Database\Eloquent\Collection;
+use App\Services\ServiceRegistry;
+use Illuminate\Support\Facades\DB;
+use App\Exceptions\RouteDuplicationException;
+use App\Exceptions\RouteCreationDuplication;
+use App\Repositories\RouteRepository;
 
 class RouteRegistry
 {
+    protected $service;
+
+    protected $repo;
+
+    public function __construct()
+    {
+        $this->service = new ServiceRegistry();
+        $this->repo = new RouteRepository();
+    }
+
     /**
      * Register all routes
      *
@@ -21,6 +36,7 @@ class RouteRegistry
 
             $params = [
                 'uses' => '\App\Http\Controllers\GatewayController@' . $method,
+                'as' => $route['slug'],
             ];
 
             $app->router->{$method}($path, $params);
@@ -32,25 +48,87 @@ class RouteRegistry
     /**
      * Get all routes available in database.
      *
-     * @param int service_id
+     * @return Collection
      */
-    public function getRoutes($service_id = null) : Collection
+    public function getRoutes(): Collection
     {
-        if (is_null($service_id)) {
-            return Route::with('service')->get();
-        }
-
-        return $this->findRouteByService($service_id);
+        return $this->repo->get();
     }
 
     /**
-     * Find route based on service
+     * Method to add route based on service slug.
      *
-     * @param int $id
+     * @param string $slug
+     * @param array $data
      */
-    protected function findRouteByService($id)
+    public function addRoute($slug, array $data)
     {
-        return $this->findService($id)->routes;
+        try {
+            $service_id = $this->service->findServiceBySlug($slug)->id;
+
+            if (!$this->isRouteSlugUnique($data['slug'])) {
+                throw new RouteDuplicationException();
+            }
+
+            $method = strtoupper($data['method']);
+
+            DB::transaction(function () use ($data, $method, $service_id) {
+                Route::create([
+                    'service_id' => $service_id,
+                    'path' => $data['path'],
+                    'method' => $method,
+                    'description' => $data['description'],
+                    'slug' => $data['slug'],
+                    'aggregate' => $data['aggregate'],
+                    'protected' => $data['protected'],
+                ]);
+            });
+        } catch (\Exception $e) {
+            throw new RouteCreationDuplication();
+        }
+    }
+
+    /**
+     * Method to add route based on service slug.
+     *
+     * @param string $slug
+     * @param array $data
+     */
+    public function updateRoute($slug, array $data)
+    {
+        try {
+            $route = $this->findRouteBySlug($slug);
+
+            $method = strtoupper($data['method']);
+
+            DB::transaction(function () use ($data, $method, $route) {
+                $route->update([
+                    'path' => $data['path'],
+                    'method' => $method,
+                    'description' => $data['description'],
+                    'slug' => $data['slug'],
+                    'aggregate' => boolean($data['aggregate']),
+                    'protected' => $data['protected'],
+                ]);
+            });
+
+            return true;
+        } catch (\Exception $e) {
+            throw $e;
+        }
+    }
+
+    /**
+     * Method to check whether route slug unique or not.
+     *
+     * @param string $slug
+     * @return bool
+     */
+    private function isRouteSlugUnique($slug)
+    {
+        $route = Route::where('slug', $slug)->first();
+
+        return is_null($route) ? true : false;
     }
 
     /**
@@ -83,12 +161,6 @@ class RouteRegistry
      */
     public function findRouteBySlug($slug)
     {
-        try {
-            $route = Route::where('slug', $slug)->first();
-
-            return $route;
-        } catch (\Exception $e) {
-            throw $e;
-        }
+        return $this->repo->findRouteBySlug($slug);
     }
 }
