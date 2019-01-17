@@ -21,11 +21,11 @@ class AppServiceProvider extends ServiceProvider
             return new HttpService($client);
         });
 
-        $this->app->singleton(RouteRegistry::class, function () {
+        $route_registry = $this->app->singleton(RouteRegistry::class, function () {
             return new RouteRegistry();
         });
 
-        $this->app->singleton(ServiceRegistry::class, function () {
+        $service_registry = $this->app->singleton(ServiceRegistry::class, function () {
             return new ServiceRegistry();
         });
 
