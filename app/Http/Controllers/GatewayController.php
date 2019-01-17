@@ -40,23 +40,13 @@ class GatewayController extends Controller
     public function __construct(Request $request, HttpService $http_service, RouteRegistry $route_registry)
     {
         $this->route = $request->route();
-        $this->route_slug = $this->getRequestRouteSlug($request);
+        $this->route_slug = $this->route[1]['as'];
         $this->route_data = $route_registry->getRouteData($this->route_slug);
         $http_service->setHeaders($request);
 
         if ($this->includeParams()) {
             $this->route_params = $this->route[2];
         }
-    }
-
-    /**
-     * Return slug from request route.
-     *
-     * @param Request $request
-     */
-    private function getRequestRouteSlug(Request $request)
-    {
-        return $request->path() . "." . strtolower($request->method());
     }
 
     /**
