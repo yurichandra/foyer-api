@@ -16,7 +16,6 @@ class Route extends Model
         'description',
         'slug',
         'aggregate',
-        'target',
         'protected',
     ];
 
@@ -26,6 +25,16 @@ class Route extends Model
     protected $casts = [
         'aggregate' => 'boolean',
         'protected' => 'boolean'
+    ];
+
+    /**
+     * Attributes that are hidden.
+     */
+    protected $hidden = [
+        'service_id',
+        'protected',
+        'created_at',
+        'updated_at',
     ];
 
     /**

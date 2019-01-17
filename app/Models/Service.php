@@ -15,6 +15,11 @@ class Service extends Model
         'slug',
     ];
 
+    protected $hidden = [
+        'created_at',
+        'updated_at',
+    ];
+
     /**
      * Define one to many relation with routes.
      */
