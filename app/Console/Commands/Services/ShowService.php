@@ -22,32 +22,12 @@ class ShowService extends Command
     protected $description = 'Show services available';
 
     /**
-     * ServiceRegistry attributes.
-     *
-     * @var string
-     */
-    protected $service;
-
-    /**
-     * Create new command instance.
-     *
-     * @param ServiceRegistry $service
-     */
-    public function __construct(ServiceRegistry $service)
-    {
-        parent::__construct();
-
-        $this->service = $service;
-    }
-
-    /**
      * Method to handle console command.
      */
-    public function handle()
+    public function handle(ServiceRegistry $service)
     {
-        
         $headers = ['id', 'name', 'url', 'slug', 'created_at', 'updated_at'];
-        $services = $this->service->getServices();
+        $services = $service->getServices();
 
         $this->table($headers, $services);
     }

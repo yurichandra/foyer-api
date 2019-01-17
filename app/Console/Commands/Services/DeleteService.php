@@ -22,33 +22,14 @@ class DeleteService extends Command
     protected $description = 'Delete a service available';
 
     /**
-     * ServiceRegistry attributes.
-     *
-     * @var string
-     */
-    protected $service;
-
-    /**
-     * Create new command instance.
-     *
-     * @param ServiceRegistry $service
-     */
-    public function __construct(ServiceRegistry $service)
-    {
-        parent::__construct();
-
-        $this->service = $service;
-    }
-
-    /**
      * Method to handle console command.
      */
-    public function handle()
+    public function handle(ServiceRegistry $service)
     {
         try {
             $slug = $this->ask('Slug of service?');
 
-            $this->service->deleteService($slug);
+            $service->deleteService($slug);
             $this->info($slug . ' has been deleted');
         } catch (\Exception $e) {
             $this->info($e->getMessage());

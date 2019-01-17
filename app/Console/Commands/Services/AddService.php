@@ -22,35 +22,16 @@ class AddService extends Command
     protected $description = 'Add a service';
 
     /**
-     * ServiceRegistry attributes.
-     *
-     * @var string
-     */
-    protected $service;
-
-    /**
-     * Create new command instance.
-     *
-     * @param ServiceRegistry $service
-     */
-    public function __construct(ServiceRegistry $service)
-    {
-        parent::__construct();
-
-        $this->service = $service;
-    }
-
-    /**
      * Method to handle console command.
      */
-    public function handle()
+    public function handle(ServiceRegistry $service)
     {
         $name = $this->ask('Name of service?');
         $url = $this->ask('URL of service?');
         $slug = $this->ask('Slug of service?');
 
         try {
-            $this->service->addService([
+            $service->addService([
                 'name' => $name,
                 'url' => $url,
                 'slug' => $slug
