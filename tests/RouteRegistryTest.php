@@ -26,7 +26,7 @@ class RouteRegistryTest extends TestCase
                 return $item->slug;
             });
 
-        $route_found = $route->findRouteBySlug('user.delete');
+        $route_found = $route->findRouteBySlug($routes_slugs->first());
 
         $this->assertInstanceOf(Route::class, $route_found);
     }
