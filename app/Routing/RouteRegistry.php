@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Exceptions\RouteDuplicationException;
 use App\Exceptions\RouteCreationDuplication;
 use App\Repositories\RouteRepository;
+use Illuminate\Support\Facades\Cache;
 
 class RouteRegistry
 {
@@ -30,13 +31,13 @@ class RouteRegistry
      */
     public function registerRoutes(Application $app)
     {
-        $this->getRoutes()->each(function ($route) use ($app) {
+        collect($this->getFinalRoutes())->each(function ($route) use ($app) {
             $method = strtolower($route['method']);
             $path = $route['path'];
 
             $params = [
                 'uses' => '\App\Http\Controllers\GatewayController@' . $method,
-                'as' => $route['slug'],
+                'as' => $route['as'],
             ];
 
             $app->router->{$method}($path, $params);
@@ -108,7 +109,7 @@ class RouteRegistry
                     'description' => $data['description'],
                     'slug' => $data['slug'],
                     'aggregate' => boolean($data['aggregate']),
-                    'protected' => $data['protected'],
+                    'protected' => boolean($data['protected']),
                 ]);
             });
 
@@ -140,14 +141,7 @@ class RouteRegistry
     public function getRouteData($key)
     {
         try {
-            $route = $this->findRouteBySlug($key);
-
-            return [
-                'url' => $route->service->url . $route->path,
-                'method' => $route->method,
-                'description' => $route->description,
-                'protected' => $route->protected,
-            ];
+            return $this->normalizeRoute()[$key];
         } catch (\Exception $e) {
             throw $e;
         }
@@ -159,8 +153,70 @@ class RouteRegistry
      * @param string $slug
      * @return Route $route
      */
-    public function findRouteBySlug($slug)
+    protected function findRouteBySlug($slug)
     {
         return $this->repo->findRouteBySlug($slug);
+    }
+
+    /**
+     * Normalize for send routes data.
+     *
+     * @return array
+     */
+    protected function normalizeRoute()
+    {
+        $routes = $this->getRoutes()
+            ->reduce(function ($carry, $route) {
+                $slug = $route->slug;
+
+                $carry[$slug] = [
+                    'url' => $route->service->url . $route->path,
+                    'path' => $route->path,
+                    'method' => $route->method,
+                    'as' => $slug,
+                    'description' => $route->description,
+                    'protected' => $route->protected,
+                ];
+
+                return $carry;
+            }, []);
+
+        return $routes;
+    }
+    
+    /**
+     * Caching the routes
+     *
+     * @return boolean
+     */
+    protected function cacheRoute()
+    {
+        $routes = json_encode($this->normalizeRoute());
+        Cache::forever('routes', $routes);
+
+        return true;
+    }
+
+    /**
+     * Return normalized routes.
+     */
+    protected function getFinalRoutes()
+    {
+        if (env('CACHE_ROUTES')) {
+            $this->cacheRoute();
+            return $this->getCacheRoutes();
+        }
+
+        return $this->normalizeRoute();
+    }
+
+    /**
+     * Return routes that were cached.
+     */
+    protected function getCacheRoutes()
+    {
+        $routes = Cache::get('routes');
+        
+        return json_decode($routes, true);
     }
 }
